@@ -9,10 +9,6 @@ func newBoard(size int) [][]int {
 		b[i] = make([]int, size)
 	}
 
-	b[1][2] = 1
-	b[2][2] = 1
-	b[3][2] = 1
-
 	return b
 }
 
@@ -27,20 +23,9 @@ func printBoard(b [][]int, size int) {
 	fmt.Println("")
 }
 
-func live(b [][]int) [][]int {
-	next := make([][]int, len(b))
-	copy(next, b)
-
-	return next
-}
-
-// Any live cell with two or three live neighbours survives.
-// Any dead cell with three live neighbours becomes a live cell.
-// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
-
-func outOfBounds(curr, offsetX, offsetY, lowBound, highBound int) bool {
-	outOfBoundsX := (curr+offsetX) < lowBound || (curr+offsetX) > highBound
-	outOfBoundsY := (curr+offsetY) < lowBound || (curr+offsetY) > highBound
+func outOfBounds(x, y, offsetX, offsetY, lowBound, highBound int) bool {
+	outOfBoundsX := (x+offsetX) < lowBound || (x+offsetX) > highBound
+	outOfBoundsY := (y+offsetY) < lowBound || (y+offsetY) > highBound
 
 	return outOfBoundsX || outOfBoundsY
 }
@@ -54,11 +39,11 @@ func countLiveNeighbours(b [][]int, size, x, y int) int {
 
 	for offsetX := -1; offsetX < 2; offsetX++ {
 		for offsetY := -1; offsetY < 2; offsetY++ {
-			if offsetX == offsetY {
+			if offsetX == 0 && offsetY == 0 {
 				continue
 			}
 
-			if outOfBounds(x, offsetX, offsetY, 0, size-1) {
+			if outOfBounds(x, y, offsetX, offsetY, 0, size-1) {
 				continue
 			}
 
@@ -72,12 +57,46 @@ func countLiveNeighbours(b [][]int, size, x, y int) int {
 	return liveNeighbours
 }
 
+func live(b [][]int, size int) [][]int {
+	next := newBoard(size)
+
+  for i := 0; i < size; i++ {
+    for j := 0; j < size; j++ {
+      neighboursAlive := countLiveNeighbours(b, size, i, j)
+
+      if isAlive(b[i][j]) {
+        if (neighboursAlive == 2 || neighboursAlive == 3) {
+          next[i][j] = 1 // cell survives
+        } else {
+          next[i][j] = 0 // cell is now dead
+        }
+      } else {
+        if neighboursAlive == 3 {
+          next[i][j] = 1 // cell is now alive
+        } else {
+          next[i][j] = 0 // cell remains dead
+        }
+      }
+    }
+  }
+
+	return next
+}
+
+// Any live cell with two or three live neighbours survives.
+// Any dead cell with three live neighbours becomes a live cell.
+// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+
+
 func main() {
 	const size = 5
 
 	board := newBoard(size)
+	board[1][2] = 1
+	board[2][2] = 1
+	board[3][2] = 1
 	printBoard(board, size)
 
-	live := countLiveNeighbours(board, size, 2, 2)
-	println(live)
+	next := live(board, size)
+	printBoard(next, size)
 }
