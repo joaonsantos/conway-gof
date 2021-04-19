@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func newBoard(size int) [][]int {
 	b := make([][]int, size)
@@ -57,28 +60,26 @@ func countLiveNeighbours(b [][]int, size, x, y int) int {
 	return liveNeighbours
 }
 
-func live(b [][]int, size int) [][]int {
-	next := newBoard(size)
+func live(board, next [][]int, size int) [][]int {
+	for i := 0; i < size; i++ {
+		for j := 0; j < size; j++ {
+			neighboursAlive := countLiveNeighbours(board, size, i, j)
 
-  for i := 0; i < size; i++ {
-    for j := 0; j < size; j++ {
-      neighboursAlive := countLiveNeighbours(b, size, i, j)
-
-      if isAlive(b[i][j]) {
-        if (neighboursAlive == 2 || neighboursAlive == 3) {
-          next[i][j] = 1 // cell survives
-        } else {
-          next[i][j] = 0 // cell is now dead
-        }
-      } else {
-        if neighboursAlive == 3 {
-          next[i][j] = 1 // cell is now alive
-        } else {
-          next[i][j] = 0 // cell remains dead
-        }
-      }
-    }
-  }
+			if isAlive(board[i][j]) {
+				if neighboursAlive == 2 || neighboursAlive == 3 {
+					next[i][j] = 1 // cell survives
+				} else {
+					next[i][j] = 0 // cell is now dead
+				}
+			} else {
+				if neighboursAlive == 3 {
+					next[i][j] = 1 // cell is now alive
+				} else {
+					next[i][j] = 0 // cell remains dead
+				}
+			}
+		}
+	}
 
 	return next
 }
@@ -87,16 +88,31 @@ func live(b [][]int, size int) [][]int {
 // Any dead cell with three live neighbours becomes a live cell.
 // All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 
+func mainLoop(start [][]int, size int, speed int) {
+	for {
+		fmt.Print("\033[H\033[2J") // clear screen
+		next := newBoard(size)
+		live(start, next, size)
+		printBoard(next, size)
+		copy(start, next)
+		time.Sleep(time.Second * time.Duration(speed))
 
+	}
+}
 func main() {
 	const size = 5
+	const speed = 1
 
 	board := newBoard(size)
+	board[0][3] = 1
+	board[0][4] = 1
+	board[1][1] = 1
+	board[1][0] = 1
 	board[1][2] = 1
 	board[2][2] = 1
-	board[3][2] = 1
+	board[2][3] = 1
+	board[3][4] = 1
 	printBoard(board, size)
 
-	next := live(board, size)
-	printBoard(next, size)
+	mainLoop(board, size, speed)
 }
