@@ -60,6 +60,10 @@ func countLiveNeighbours(b [][]int, size, x, y int) int {
 	return liveNeighbours
 }
 
+// Any live cell with two or three live neighbours survives.
+// Any dead cell with three live neighbours becomes a live cell.
+// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+
 func live(board, next [][]int, size int) [][]int {
 	for i := 0; i < size; i++ {
 		for j := 0; j < size; j++ {
@@ -83,10 +87,6 @@ func live(board, next [][]int, size int) [][]int {
 
 	return next
 }
-
-// Any live cell with two or three live neighbours survives.
-// Any dead cell with three live neighbours becomes a live cell.
-// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 
 func mainLoop(start [][]int, size int, speed int) {
 	for {
