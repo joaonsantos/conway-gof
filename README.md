@@ -16,4 +16,4 @@ go build -o conway && ./conway -help
 
 # Example
 
-![Conway's Game of Life Vizualization](https://media.giphy.com/media/uCZVpX5CPQP3weC43I/giphy.gif)
+![Conway's Game of Life Vizualization](https://media.giphy.com/media/uCZVpX5CPQP3weC43I/source.gif)
