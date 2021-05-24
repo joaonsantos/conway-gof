@@ -1,12 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"math/rand"
 	"time"
 )
 
+type Board [][]int
+
 func newBoard(size int) [][]int {
-	b := make([][]int, size)
+	b := make(Board, size)
 
 	for i := 0; i < size; i++ {
 		b[i] = make([]int, size)
@@ -15,10 +19,21 @@ func newBoard(size int) [][]int {
 	return b
 }
 
-func printBoard(b [][]int, size int) {
+func initializeBoard(b Board, size int, seed int64) {
+	// initialize random seed
+	rand.Seed(seed)
+
 	for i := 0; i < size; i++ {
 		for j := 0; j < size; j++ {
-			fmt.Print(fmt.Sprintf("%v ", b[i][j]))
+			b[i][j] = rand.Intn(2) // either 0 or 1
+		}
+	}
+}
+
+func printBoard(b Board, size int) {
+	for i := 0; i < size; i++ {
+		for j := 0; j < size; j++ {
+			fmt.Printf("%v ", b[i][j])
 		}
 
 		fmt.Println("")
@@ -37,7 +52,7 @@ func isAlive(c int) bool {
 	return c == 1
 }
 
-func countLiveNeighbours(b [][]int, size, x, y int) int {
+func countLiveNeighbours(b Board, size, x, y int) int {
 	liveNeighbours := 0
 
 	for offsetX := -1; offsetX < 2; offsetX++ {
@@ -64,7 +79,7 @@ func countLiveNeighbours(b [][]int, size, x, y int) int {
 // Any dead cell with three live neighbours becomes a live cell.
 // All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 
-func live(board, next [][]int, size int) [][]int {
+func live(board, next Board, size int) Board {
 	for i := 0; i < size; i++ {
 		for j := 0; j < size; j++ {
 			neighboursAlive := countLiveNeighbours(board, size, i, j)
@@ -88,31 +103,31 @@ func live(board, next [][]int, size int) [][]int {
 	return next
 }
 
-func mainLoop(start [][]int, size int, speed int) {
+func mainLoop(b Board, size int, delay int) {
 	for {
 		fmt.Print("\033[H\033[2J") // clear screen
 		next := newBoard(size)
-		live(start, next, size)
+		live(b, next, size)
 		printBoard(next, size)
-		copy(start, next)
-		time.Sleep(time.Second * time.Duration(speed))
+		copy(b, next)
+		time.Sleep(time.Second * time.Duration(delay))
 
 	}
 }
 func main() {
-	const size = 5
-	const speed = 1
+	var size int
+	var delay int
+	var seed int64
+
+	flag.IntVar(&size, "size", 5, "the size of the board")
+	flag.IntVar(&delay, "delay", 1, "the vizualization refresh delay")
+	flag.Int64Var(&seed, "seed", time.Now().UnixNano(), "the seed for initializing the board")
+
+	flag.Parse()
 
 	board := newBoard(size)
-	board[0][3] = 1
-	board[0][4] = 1
-	board[1][1] = 1
-	board[1][0] = 1
-	board[1][2] = 1
-	board[2][2] = 1
-	board[2][3] = 1
-	board[3][4] = 1
+	initializeBoard(board, size, seed)
 	printBoard(board, size)
 
-	mainLoop(board, size, speed)
+	mainLoop(board, size, delay)
 }
